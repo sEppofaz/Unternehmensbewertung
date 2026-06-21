@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Bewertung" />
+  <meta name="description" content="Szenariobasierte Unternehmensbewertung" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <title>Unternehmensbewertung</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f2f2f7;
+      --bg2:      #ffffff;
+      --bg3:      #e5e5ea;
+      --accent:   #007aff;
+      --text:     #1c1c1e;
+      --muted:    #6e6e73;
+      --border:   #d1d1d6;
+      --blue:     #007aff;
+      --purple:   #8b5cf6;
+      --green:    #34c759;
+      --red:      #ff3b30;
+      --amber:    #ff9f0a;
+      --surface:  #ffffff;
+      --surface2: #f2f2f7;
+      --radius:   10px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:       #1c1c1e;
+        --bg2:      #2c2c2e;
+        --bg3:      #3a3a3c;
+        --accent:   #0a84ff;
+        --text:     #ffffff;
+        --muted:    #aeaeb2;
+        --border:   #48484a;
+        --blue:     #0a84ff;
+        --purple:   #bf5af2;
+        --green:    #30d158;
+        --red:      #ff453a;
+        --amber:    #ffd60a;
+        --surface:  #2c2c2e;
+        --surface2: #3a3a3c;
+      }
+    }
+
+    html { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100%;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* ── Layout ── */
+    #app { max-width: 560px; margin: 0 auto; padding: 0 16px 32px; }
+
+    header {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left));
+      margin: 0 -16px;
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    .header-inner { max-width: 560px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+    .logo { width: 32px; height: 32px; flex-shrink: 0; }
+    .header-text { flex: 1; }
+    .header-text h1 { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+    .header-text p  { font-size: 11px; color: var(--muted); }
+
+    #btn-info {
+      background: rgba(0,0,0,.06); border: none; color: var(--text);
+      height: 34px; padding: 0 12px; border-radius: 9px;
+      font-size: 13px; font-weight: 600; letter-spacing: .3px;
+      cursor: pointer; transition: background .15s; flex-shrink: 0;
+    }
+    #btn-info:active { background: rgba(0,0,0,.12); }
+    @media (prefers-color-scheme: dark) {
+      #btn-info { background: rgba(255,255,255,.15); color: #fff; }
+      #btn-info:active { background: rgba(255,255,255,.25); }
+    }
+
+    /* ── Step Nav ── */
+    .step-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin: 20px 0 24px;
+    }
+    .step-btn {
+      padding: 9px 4px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      background: var(--surface2);
+      color: var(--muted);
+      min-height: 44px;
+    }
+    .step-btn.active { background: var(--blue); color: #fff; }
+    .step-btn.done   { background: var(--surface); color: var(--blue); border: 1px solid var(--blue); }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── Form ── */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .optional { font-size: 10px; font-weight: 400; color: var(--muted); text-transform: none; letter-spacing: 0; }
+    .field input, .field select {
+      width: 100%;
+      padding: 11px 12px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder { color: var(--muted); }
+    .field input:focus, .field select:focus { border-color: var(--blue); }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── Info box ── */
+    .info-box {
+      background: rgba(0,122,255,0.08);
+      border: 1px solid rgba(0,122,255,0.25);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      color: var(--blue);
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+    .info-source { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Risk items ── */
+    .risk-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .risk-item.active-neg { border-color: var(--red);   background: rgba(255,59,48,0.07); }
+    .risk-item.active-pos { border-color: var(--green); background: rgba(52,199,89,0.07); }
+    .risk-label { font-size: 13px; color: var(--text); flex: 1; padding-right: 12px; line-height: 1.4; }
+    .risk-badge { font-size: 13px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .risk-badge.neg { color: var(--red); }
+    .risk-badge.pos { color: var(--green); }
+
+    .risk-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      border-radius: 8px;
+      margin-top: 4px;
+      border: 1.5px solid var(--border);
+    }
+    .risk-total.danger { border-color: var(--red);   background: rgba(255,59,48,0.07); }
+    .risk-total.ok     { border-color: var(--green); background: rgba(52,199,89,0.07); }
+    .risk-total-label { font-size: 13px; font-weight: 700; }
+    .risk-total-value { font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+    /* ── Result ── */
+    .result-hero { text-align: center; padding: 24px 0 20px; }
+    .result-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .result-range { font-size: 28px; font-weight: 900; letter-spacing: -0.03em; color: var(--blue); line-height: 1.1; }
+    .result-mid { font-size: 13px; color: var(--muted); margin-top: 8px; }
+    .result-mid strong { color: var(--text); }
+
+    .result-equity {
+      margin-top: 16px;
+      padding: 14px;
+      background: rgba(52,199,89,0.07);
+      border: 1px solid rgba(52,199,89,0.3);
+      border-radius: 8px;
+      text-align: center;
+    }
+    .result-equity-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .result-equity-range { font-size: 20px; font-weight: 900; color: var(--green); }
+    .result-equity-note  { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Football field ── */
+    .ff-row { margin-bottom: 14px; }
+    .ff-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    .ff-meta strong { color: var(--text); font-variant-numeric: tabular-nums; }
+    .ff-track { height: 10px; background: var(--surface2); border-radius: 5px; position: relative; overflow: hidden; }
+    .ff-bar { position: absolute; height: 100%; border-radius: 5px; }
+
+    /* ── Assumptions table ── */
+    .assume-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      gap: 12px;
+    }
+    .assume-row:last-child { border-bottom: none; }
+    .assume-key { color: var(--muted); flex-shrink: 0; }
+    .assume-val { font-weight: 600; text-align: right; }
+
+    /* ── Warning ── */
+    .warning {
+      background: #451a03;
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      color: #fef3c7;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
+    }
+    .btn:active { opacity: 0.85; }
+    .btn-primary  { background: var(--blue);    color: #fff; }
+    .btn-back     { background: var(--surface2); color: var(--muted); }
+    .btn-row { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+
+    /* ── Install banner ── */
+    #install-banner {
+      display: none;
+      position: fixed;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--blue);
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 8px 32px rgba(0,122,255,0.4);
+      cursor: pointer;
+      white-space: nowrap;
+      z-index: 100;
+      gap: 8px;
+      align-items: center;
+    }
+    #install-banner.show { display: flex; }
+
+    /* ── Offline pill ── */
+    #offline-pill {
+      display: none;
+      position: fixed;
+      top: calc(72px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--amber);
+      color: #000;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 20;
+    }
+    #offline-pill.show { display: block; }
+
+    /* ── Pull-to-Refresh ── */
+    .ptr {
+      position: fixed; top: -60px; left: 50%; transform: translateX(-50%);
+      background: var(--surface); border-radius: 20px; padding: 8px 16px;
+      font-size: 0.85rem; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.15);
+      transition: top 0.2s ease; z-index: 100;
+    }
+    .ptr.show { top: calc(env(safe-area-inset-top) + 10px); }
+    .ptr-spin {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--bg3); border-top-color: var(--accent);
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Scroll-to-Top ── */
+    .back-top {
+      position: fixed;
+      bottom: calc(24px + env(safe-area-inset-bottom));
+      right: 16px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--blue); color: #fff;
+      border: none; font-size: 20px; cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,.25);
+      display: none; align-items: center; justify-content: center;
+      z-index: 200; transition: opacity .2s;
+    }
+    .back-top.vis { display: flex; }
+    .back-top:active { opacity: .7; }
+
+    /* ── Info Overlay ── */
+    #info-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.4); }
+    #info-overlay.show { display: flex; align-items: flex-end; }
+    #info-sheet {
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      width: 100%; max-height: 85vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+    }
+    #info-sheet-hd {
+      padding: 14px 16px 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    #btn-info-close {
+      background: var(--surface2); border: none; border-radius: 16px;
+      padding: 5px 14px; font-size: 13px; cursor: pointer; color: var(--text);
+    }
+    #info-sheet-body {
+      overflow-y: auto;
+      padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+      -webkit-overflow-scrolling: touch;
+      font-size: 14px; line-height: 1.6; color: var(--text);
+    }
+    #info-sheet-body h3 {
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 16px 0 6px;
+    }
+    #info-sheet-body h3:first-child { margin-top: 0; }
+    #info-sheet-body p { margin-bottom: 8px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="ptr" id="ptr"><div class="ptr-spin"></div> Aktualisiere…</div>
+<div id="offline-pill">Offline-Modus</div>
+
+<header>
+  <div class="header-inner">
+    <svg class="logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="8" fill="var(--surface2)"/>
+      <rect x="4" y="18" width="5" height="10" rx="1.5" fill="var(--blue)"/>
+      <rect x="11" y="13" width="5" height="15" rx="1.5" fill="var(--purple)"/>
+      <rect x="18" y="16" width="5" height="12" rx="1.5" fill="var(--green)"/>
+      <rect x="25" y="8" width="3" height="20" rx="1.5" fill="var(--blue)" opacity="0.5"/>
+    </svg>
+    <div class="header-text">
+      <h1>Unternehmensbewertung</h1>
+      <p>Szenariobasiert · Offline verfügbar</p>
+    </div>
+    <button id="btn-info" onclick="document.getElementById('info-overlay').classList.add('show')" aria-label="Info">Info</button>
+  </div>
+</header>
+
+<div id="app">
+
+  <nav class="step-nav">
+    <button class="step-btn active" id="nav-1" onclick="goStep(1)">① Stammdaten</button>
+    <button class="step-btn" id="nav-2" onclick="goStep(2)">② Risiken</button>
+    <button class="step-btn" id="nav-3" onclick="goStep(3)">③ Ergebnis</button>
+  </nav>
+
+  <!-- ── Step 1: Stammdaten ── -->
+  <div id="step-1">
+    <div class="card">
+      <div class="card-title">Unternehmen & Kennzahlen</div>
+
+      <div class="field">
+        <label>Firmenname</label>
+        <input id="firma" type="text" value="QuEST Global Engineering Services GmbH" placeholder="z.B. Muster GmbH" oninput="onInput()" />
+      </div>
+
+      <div class="field">
+        <label>Branche</label>
+        <select id="branche" onchange="onBrancheChange()">
+          <option value="engineering">Engineering / Tech Services</option>
+          <option value="industrie">Industrie / Produktion</option>
+          <option value="saas">Software / SaaS</option>
+          <option value="handel">Handel</option>
+          <option value="bau">Bau / Infrastruktur</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Umsatz (Mio. €)</label>
+          <input id="umsatz" type="number" min="0" step="0.1" value="9.5" oninput="onInput()" />
+        </div>
+        <div class="field">
+          <label>Substanzwert bereinigt (Mio. €)</label>
+          <input id="substanz" type="number" min="0" step="0.1" value="8.0" oninput="onInput()" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>EBITDA (Mio. €) <span class="optional">optional</span></label>
+          <input id="ebitda" type="number" min="0" step="0.1" placeholder="leer = Schätzung" oninput="onInput()" />
+        </div>
+        <div class="field">
+          <label>Net Debt (Mio. €) <span class="optional">optional</span></label>
+          <input id="netdebt" type="number" step="0.1" placeholder="leer = nur EV" oninput="onInput()" />
+        </div>
+      </div>
+
+      <div class="info-box" id="branche-info"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="goStep(2)">Weiter → Risikofaktoren</button>
+  </div>
+
+  <!-- ── Step 2: Risiken ── -->
+  <div id="step-2" style="display:none">
+    <div class="card">
+      <div class="card-title">Risiko- & Wertfaktoren</div>
+      <div id="risk-list"></div>
+      <div class="risk-total" id="risk-total">
+        <span class="risk-total-label">Gesamt-Abschlag</span>
+        <span class="risk-total-value" id="risk-total-value"></span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goStep(1)">← Zurück</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Weiter → Ergebnis</button>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Ergebnis ── -->
+  <div id="step-3" style="display:none">
+    <div class="warning">
+      ⚠️ <strong>Szenario-Bewertung.</strong> Keine Grundlage für Investitionsentscheidungen ohne Vollabschluss und professionelle Due Diligence.
+    </div>
+
+    <div class="card">
+      <div class="result-hero">
+        <div class="result-eyebrow" id="result-eyebrow">Enterprise Value (Bandbreite)</div>
+        <div class="result-range" id="result-range">–</div>
+        <div class="result-mid" id="result-mid">–</div>
+      </div>
+      <div id="equity-block" style="display:none">
+        <div class="result-equity">
+          <div class="result-equity-label">Equity Value (EV − Net Debt)</div>
+          <div class="result-equity-range" id="equity-range">–</div>
+          <div class="result-equity-note" id="equity-note">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Football Field</div>
+      <div id="ff-chart"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Annahmen</div>
+      <div id="assume-table"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-back" onclick="goStep(1)">← Neu</button>
+      <button class="btn btn-primary" onclick="shareResult()" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span id="share-icon"></span><span>Ergebnis teilen</span>
+      </button>
+    </div>
+    <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:16px;">
+      Multiples: Damodaran Jan. 2025 · Methodik: IDW S1 / Multiplikatorverfahren
+    </div>
+  </div>
+
+</div><!-- /#app -->
+
+<!-- Info Overlay -->
+<div id="info-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div id="info-sheet">
+    <div id="info-sheet-hd">
+      <strong>ℹ️ Info</strong>
+      <button id="btn-info-close" onclick="document.getElementById('info-overlay').classList.remove('show')">Schließen</button>
+    </div>
+    <div id="info-sheet-body">
+      <h3>Was berechnet die App?</h3>
+      <p>Eine plausible Bandbreite des Unternehmenswerts aus drei Methoden: Umsatz-Multiple, EBITDA-Multiple und Substanzwert. Risikofaktoren wie Verluste, Kundenkonzentration oder Konzernverflechtungen werden als prozentualer Abschlag berücksichtigt.</p>
+
+      <h3>Enterprise Value vs. Equity Value</h3>
+      <p>Das primäre Ergebnis ist der <strong>Enterprise Value (EV)</strong> – der Gesamtwert des Unternehmens inkl. Schulden. Wenn du den Net Debt eingibst (Finanzverbindlichkeiten minus Cashbestand), wird zusätzlich der <strong>Equity Value</strong> ausgewiesen: das, was der Käufer nach Schuldentilgung erhält.</p>
+
+      <h3>EBITDA-Feld</h3>
+      <p>Wenn du den tatsächlichen EBITDA eingibst, verwendet ihn die App direkt für die EBITDA-Multiple-Methode. Bleibt das Feld leer, schätzt die App den EBITDA aus der branchenüblichen Marge (Damodaran).</p>
+
+      <h3>Datenquellen & Methodik</h3>
+      <p>Branchenspezifische Multiples: Damodaran (Januar 2025). Bewertungsrahmen: IDW S1 / Multiplikatorverfahren.</p>
+
+      <h3>Hinweis</h3>
+      <p>Diese App liefert eine Orientierung für frühe Verhandlungsphasen – kein Ersatz für professionelle Due Diligence oder ein Bewertungsgutachten.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Install Banner -->
+<div id="install-banner" onclick="installApp()">
+  <span id="install-icon"></span><span>App installieren</span>
+</div>
+
+<!-- Scroll-to-Top -->
+<button class="back-top" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Nach oben">&#8679;</button>
+
+<script>
+// ── Icons ─────────────────────────────────────────────────────────────────────
+const ICON_PATHS = {
+  smartphone: `<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>`,
+  share: `<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/>`,
+};
+function icon(name, size=18) {
+  const p = ICON_PATHS[name] || '';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+const BRANCHES = {
+  engineering: { label: "Engineering / Tech Services", ebitda: [8,  14], evUmsatz: [0.3, 0.7], evEbitda: [4,  7] },
+  industrie:   { label: "Industrie / Produktion",      ebitda: [10, 18], evUmsatz: [0.4, 0.9], evEbitda: [5,  9] },
+  saas:        { label: "Software / SaaS",              ebitda: [15, 30], evUmsatz: [2.0, 6.0], evEbitda: [10, 20] },
+  handel:      { label: "Handel",                       ebitda: [3,   7], evUmsatz: [0.2, 0.5], evEbitda: [4,  6] },
+  bau:         { label: "Bau / Infrastruktur",          ebitda: [6,  12], evUmsatz: [0.3, 0.6], evEbitda: [4,  7] },
+};
+
+const RISKS = [
+  { id: "verluste",    label: "Mehrjährige Verluste (≥ 3 Jahre)",           pct: 25,  pos: false },
+  { id: "fallend",     label: "Fallender Umsatz",                            pct: 15,  pos: false },
+  { id: "konzern_neg", label: "Konzerninterne Verflechtung / Intransparenz", pct: 10,  pos: false },
+  { id: "illiquid",    label: "GmbH-Illiquiditätsabschlag",                  pct: 15,  pos: false },
+  { id: "kunden",      label: "Abhängigkeit von wenigen Kunden",             pct: 10,  pos: false },
+  { id: "wachstum",    label: "Starkes Wachstum / positive Trendwende",      pct: -15, pos: true  },
+  { id: "konzern_pos", label: "Globaler Konzernrückhalt",                    pct: -10, pos: true  },
+];
+
+const DEFAULT_RISKS = ["verluste", "fallend", "konzern_neg", "illiquid"];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = {
+  firma:       "QuEST Global Engineering Services GmbH",
+  branche:     "engineering",
+  umsatz:      9.5,
+  substanz:    8.0,
+  ebitda:      null,
+  netdebt:     null,
+  activeRisks: new Set(DEFAULT_RISKS),
+  currentStep: 1,
+};
+
+// ── Format ────────────────────────────────────────────────────────────────────
+function fmtM(v) {
+  if (v === null || isNaN(v)) return "–";
+  return (v / 1e6).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Mio. €";
+}
+
+// ── Step navigation ───────────────────────────────────────────────────────────
+function goStep(n) {
+  readInputs();
+  [1, 2, 3].forEach(i => {
+    document.getElementById("step-" + i).style.display = i === n ? "" : "none";
+    const btn = document.getElementById("nav-" + i);
+    btn.className = "step-btn" + (i === n ? " active" : i < n ? " done" : "");
+  });
+  state.currentStep = n;
+  if (n === 2) renderRisks();
+  if (n === 3) renderResult();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Inputs ────────────────────────────────────────────────────────────────────
+function readInputs() {
+  state.firma    = document.getElementById("firma").value.trim() || "Unternehmen";
+  state.branche  = document.getElementById("branche").value;
+  state.umsatz   = parseFloat(document.getElementById("umsatz").value) || 0;
+  state.substanz = parseFloat(document.getElementById("substanz").value) || 0;
+  const ev = document.getElementById("ebitda").value.trim();
+  const nv = document.getElementById("netdebt").value.trim();
+  state.ebitda  = ev !== "" ? (parseFloat(ev)  ?? null) : null;
+  state.netdebt = nv !== "" ? (parseFloat(nv)  ?? null) : null;
+}
+
+function onInput() { readInputs(); }
+
+function onBrancheChange() {
+  state.branche = document.getElementById("branche").value;
+  renderBrancheInfo();
+}
+
+function renderBrancheInfo() {
+  const b = BRANCHES[state.branche];
+  document.getElementById("branche-info").innerHTML =
+    `<strong>${b.label}</strong><br>
+     EBITDA-Marge: ${b.ebitda[0]}–${b.ebitda[1]}% &nbsp;·&nbsp;
+     EV/Umsatz: ${b.evUmsatz[0]}×–${b.evUmsatz[1]}× &nbsp;·&nbsp;
+     EV/EBITDA: ${b.evEbitda[0]}×–${b.evEbitda[1]}×
+     <div class="info-source">Quelle: Damodaran (Jan. 2025)</div>`;
+}
+
+// ── Risks ─────────────────────────────────────────────────────────────────────
+function calcAbschlag() {
+  let sum = 0;
+  RISKS.forEach(r => { if (state.activeRisks.has(r.id)) sum += r.pct; });
+  return Math.min(Math.max(sum, 0), 70);
+}
+
+function renderRisks() {
+  const list = document.getElementById("risk-list");
+  list.innerHTML = RISKS.map(r => {
+    const active = state.activeRisks.has(r.id);
+    const cls    = active ? (r.pos ? "active-pos" : "active-neg") : "";
+    const sign   = r.pct > 0 ? "–" : "+";
+    const bCls   = r.pos ? "pos" : "neg";
+    return `<div class="risk-item ${cls}" onclick="toggleRisk('${r.id}')">
+      <span class="risk-label">${r.label}</span>
+      <span class="risk-badge ${bCls}">${sign}${Math.abs(r.pct)}%</span>
+    </div>`;
+  }).join("");
+  updateRiskTotal();
+}
+
+function toggleRisk(id) {
+  state.activeRisks.has(id) ? state.activeRisks.delete(id) : state.activeRisks.add(id);
+  renderRisks();
+}
+
+function updateRiskTotal() {
+  const ab  = calcAbschlag();
+  const el  = document.getElementById("risk-total");
+  const val = document.getElementById("risk-total-value");
+  el.className        = "risk-total " + (ab > 40 ? "danger" : "ok");
+  val.style.color     = ab > 40 ? "var(--red)" : "var(--green)";
+  val.textContent     = "–" + ab + "%";
+}
+
+// ── Calculations ──────────────────────────────────────────────────────────────
+function calc() {
+  const b  = BRANCHES[state.branche];
+  const ab = calcAbschlag();
+  const u  = state.umsatz   * 1e6;
+  const s  = state.substanz * 1e6;
+
+  const ebitdaActual    = state.ebitda !== null ? state.ebitda * 1e6 : null;
+  const ebitdaIsEstimate = ebitdaActual === null;
+  const ebitdaLow       = ebitdaActual !== null ? ebitdaActual : u * b.ebitda[0] / 100;
+  const ebitdaHigh      = ebitdaActual !== null ? ebitdaActual : u * b.ebitda[1] / 100;
+
+  const factor = 1 - ab / 100;
+
+  const rows = [
+    {
+      label: "Umsatz-Multiple",
+      color: "var(--blue)",
+      low:  u * b.evUmsatz[0] * factor,
+      high: u * b.evUmsatz[1] * factor,
+    },
+    {
+      label: ebitdaIsEstimate ? "EBITDA-Multiple (Schätzung)" : "EBITDA-Multiple",
+      color: "var(--purple)",
+      low:  ebitdaLow  * b.evEbitda[0] * factor,
+      high: ebitdaHigh * b.evEbitda[1] * factor,
+    },
+    {
+      label: "Substanzwert (bereinigt)",
+      color: "var(--green)",
+      low:  s * 0.6 * factor,
+      high: s * 0.9 * factor,
+    },
+  ];
+
+  const bandLow  = Math.min(...rows.map(r => r.low));
+  const bandHigh = Math.max(...rows.map(r => r.high));
+  const midpoint = (bandLow + bandHigh) / 2;
+
+  const netDebt   = state.netdebt !== null ? state.netdebt * 1e6 : null;
+  const equityLow  = netDebt !== null ? bandLow  - netDebt : null;
+  const equityHigh = netDebt !== null ? bandHigh - netDebt : null;
+  const equityMid  = netDebt !== null ? midpoint - netDebt : null;
+
+  return { rows, bandLow, bandHigh, midpoint, ab, ebitdaLow, ebitdaHigh, ebitdaIsEstimate, b, netDebt, equityLow, equityHigh, equityMid };
+}
+
+// ── Result render ─────────────────────────────────────────────────────────────
+function renderResult() {
+  const { rows, bandLow, bandHigh, midpoint, ab, ebitdaLow, ebitdaHigh, ebitdaIsEstimate, b, netDebt, equityLow, equityHigh, equityMid } = calc();
+  const chartMax = bandHigh * 1.15 || 1;
+
+  document.getElementById("result-range").textContent = fmtM(bandLow) + " – " + fmtM(bandHigh);
+  document.getElementById("result-mid").innerHTML =
+    `Mittelpunkt: <strong>${fmtM(midpoint)}</strong> &nbsp;·&nbsp; Risikoabschlag: <strong style="color:var(--red)">–${ab}%</strong>`;
+
+  const equityBlock = document.getElementById("equity-block");
+  if (equityLow !== null) {
+    equityBlock.style.display = "";
+    document.getElementById("equity-range").textContent = fmtM(equityLow) + " – " + fmtM(equityHigh);
+    document.getElementById("equity-note").textContent  = `Mittelpunkt: ${fmtM(equityMid)} · Net Debt: ${fmtM(netDebt)}`;
+  } else {
+    equityBlock.style.display = "none";
+  }
+
+  document.getElementById("ff-chart").innerHTML = rows.map(r => {
+    const pL = (r.low  / chartMax) * 100;
+    const pW = Math.max(((r.high - r.low) / chartMax) * 100, 1.5);
+    return `<div class="ff-row">
+      <div class="ff-meta">
+        <span>${r.label}</span>
+        <strong>${fmtM(r.low)} – ${fmtM(r.high)}</strong>
+      </div>
+      <div class="ff-track">
+        <div class="ff-bar" style="left:${pL.toFixed(1)}%;width:${pW.toFixed(1)}%;background:${r.color}"></div>
+      </div>
+    </div>`;
+  }).join("");
+
+  const assumeData = [
+    ["Unternehmen",       state.firma],
+    ["Branche",           b.label],
+    ["Umsatz",            fmtM(state.umsatz   * 1e6)],
+    ["EBITDA",            ebitdaIsEstimate ? fmtM(ebitdaLow) + " – " + fmtM(ebitdaHigh) + " (Schätzung)" : fmtM(state.ebitda * 1e6)],
+    ["Substanzwert",      fmtM(state.substanz * 1e6) + " (bereinigt)"],
+    ["EV/Umsatz",         b.evUmsatz[0] + "× – " + b.evUmsatz[1] + "×"],
+    ["EV/EBITDA",         b.evEbitda[0] + "× – " + b.evEbitda[1] + "×"],
+    ["Net Debt",          netDebt !== null ? fmtM(netDebt) : "–"],
+    ["Risikofaktoren",    state.activeRisks.size + " aktiv"],
+    ["Risikoabschlag",    "–" + ab + "%"],
+  ];
+  document.getElementById("assume-table").innerHTML = assumeData.map(([k, v]) =>
+    `<div class="assume-row"><span class="assume-key">${k}</span><span class="assume-val">${v}</span></div>`
+  ).join("");
+}
+
+// ── Share ─────────────────────────────────────────────────────────────────────
+async function shareResult() {
+  const { bandLow, bandHigh, midpoint, ab, netDebt, equityLow, equityHigh, equityMid } = calc();
+  let text = `Unternehmensbewertung: ${state.firma}\nEnterprise Value: ${fmtM(bandLow)} – ${fmtM(bandHigh)}\nMittelpunkt EV: ${fmtM(midpoint)}\nRisikoabschlag: –${ab}%`;
+  if (equityLow !== null) {
+    text += `\nEquity Value: ${fmtM(equityLow)} – ${fmtM(equityHigh)} (Mittelpunkt: ${fmtM(equityMid)}, Net Debt: ${fmtM(netDebt)})`;
+  }
+  text += `\n\n⚠️ Szenario-Bewertung – kein Investitionsersatz.`;
+  if (navigator.share) {
+    await navigator.share({ title: "Unternehmensbewertung", text }).catch(() => {});
+  } else {
+    await navigator.clipboard.writeText(text).catch(() => {});
+    alert("Ergebnis in Zwischenablage kopiert.");
+  }
+}
+
+// ── PWA install ───────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("install-banner").classList.add("show");
+});
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById("install-banner").classList.remove("show");
+}
+window.addEventListener("appinstalled", () => {
+  document.getElementById("install-banner").classList.remove("show");
+});
+
+// ── Offline ───────────────────────────────────────────────────────────────────
+function updateOnline() {
+  document.getElementById("offline-pill").classList.toggle("show", !navigator.onLine);
+}
+window.addEventListener("online",  updateOnline);
+window.addEventListener("offline", updateOnline);
+updateOnline();
+
+// ── Pull-to-Refresh ───────────────────────────────────────────────────────────
+const ptrEl = document.getElementById("ptr");
+let ptrStartY = 0, ptrActive = false;
+document.addEventListener("touchstart", e => {
+  if (window.scrollY === 0) { ptrStartY = e.touches[0].clientY; ptrActive = true; }
+}, { passive: true });
+document.addEventListener("touchmove", e => {
+  if (!ptrActive) return;
+  if (e.touches[0].clientY - ptrStartY > 50) ptrEl.classList.add("show");
+}, { passive: true });
+document.addEventListener("touchend", e => {
+  if (!ptrActive) return;
+  if (e.changedTouches[0].clientY - ptrStartY > 80) location.reload();
+  ptrEl.classList.remove("show");
+  ptrActive = false;
+}, { passive: true });
+
+// ── Scroll-to-Top ─────────────────────────────────────────────────────────────
+window.addEventListener("scroll", () => {
+  document.getElementById("back-top").classList.toggle("vis", window.scrollY > 300);
+});
+
+// ── Service Worker ────────────────────────────────────────────────────────────
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").then(reg => {
+    reg.update();
+    reg.addEventListener("updatefound", () => {
+      reg.installing.addEventListener("statechange", function() {
+        if (this.state === "activated") location.reload();
+      });
+    });
+  }).catch(console.warn);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && "serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistration().then(reg => reg && reg.update());
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById("install-icon").innerHTML = icon("smartphone", 16);
+document.getElementById("share-icon").innerHTML   = icon("share", 16);
+renderBrancheInfo();
+</script>
+</body>
+</html>
