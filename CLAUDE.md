@@ -19,7 +19,9 @@ Szenariobasierte Unternehmensbewertung als Offline-PWA. 3 Schritte: Stammdaten �
 
 ## Hosting
 
-Aktuell lokal (Dropbox). Für Veröffentlichung: GitHub Pages oder Hetzner nginx-Location anlegen (BKM/Server-nginx.md beachten).
+**Live:** https://seppofaz.github.io/Unternehmensbewertung/
+**GitHub:** https://github.com/sEppofaz/Unternehmensbewertung
+**Deployment:** `git push` → GitHub Pages (automatisch)
 
 ## Icon neu generieren
 
