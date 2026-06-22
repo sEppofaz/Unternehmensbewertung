@@ -858,21 +858,9 @@ window.addEventListener("scroll", () => {
 });
 
 // ── Service Worker ────────────────────────────────────────────────────────────
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js").then(reg => {
-    reg.update();
-    reg.addEventListener("updatefound", () => {
-      reg.installing.addEventListener("statechange", function() {
-        if (this.state === "activated") location.reload();
-      });
-    });
-  }).catch(console.warn);
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(e => console.warn("[sw]", e));
 }
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && "serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistration().then(reg => reg && reg.update());
-  }
-});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("install-icon").innerHTML = icon("smartphone", 16);
