@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f2f2f7" id="theme-color-meta" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Bewertung" />
@@ -33,7 +32,7 @@
       --radius:   10px;
     }
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme="light"]) {
         --bg:       #1c1c1e;
         --bg2:      #2c2c2e;
         --bg3:      #3a3a3c;
@@ -49,6 +48,22 @@
         --surface:  #2c2c2e;
         --surface2: #3a3a3c;
       }
+    }
+    :root[data-theme="dark"] {
+      --bg:       #1c1c1e;
+      --bg2:      #2c2c2e;
+      --bg3:      #3a3a3c;
+      --accent:   #0a84ff;
+      --text:     #ffffff;
+      --muted:    #aeaeb2;
+      --border:   #48484a;
+      --blue:     #0a84ff;
+      --purple:   #bf5af2;
+      --green:    #30d158;
+      --red:      #ff453a;
+      --amber:    #ffd60a;
+      --surface:  #2c2c2e;
+      --surface2: #3a3a3c;
     }
 
     html { height: 100%; }
@@ -86,9 +101,11 @@
     }
     #btn-info:active { background: rgba(0,0,0,.12); }
     @media (prefers-color-scheme: dark) {
-      #btn-info { background: rgba(255,255,255,.15); color: #fff; }
-      #btn-info:active { background: rgba(255,255,255,.25); }
+      :root:not([data-theme="light"]) #btn-info { background: rgba(255,255,255,.15); color: #fff; }
+      :root:not([data-theme="light"]) #btn-info:active { background: rgba(255,255,255,.25); }
     }
+    :root[data-theme="dark"] #btn-info { background: rgba(255,255,255,.15); color: #fff; }
+    :root[data-theme="dark"] #btn-info:active { background: rgba(255,255,255,.25); }
 
     /* ── Step Nav ── */
     .step-nav {
@@ -393,7 +410,23 @@
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; animation: none !important; }
     }
+    .theme-switch-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; font-size: .92rem; font-weight: 500; color: var(--text); }
+    .theme-switch { width: 46px; height: 26px; border-radius: 13px; background: var(--border); border: none; position: relative; padding: 0; cursor: pointer; transition: background .2s ease; flex-shrink: 0; -webkit-appearance: none; }
+    .theme-switch[aria-checked="true"] { background: var(--accent); }
+    .theme-switch-knob { position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s ease; }
+    .theme-switch[aria-checked="true"] .theme-switch-knob { transform: translateX(20px); }
   </style>
+  <script>
+  (function () {
+    try {
+      var t = localStorage.getItem('ub_theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      var dark = t ? t === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var meta = document.getElementById('theme-color-meta');
+      if (meta) meta.setAttribute('content', dark ? '#1c1c1e' : '#f2f2f7');
+    } catch (e) {}
+  })();
+  </script>
 </head>
 <body>
 
@@ -556,6 +589,11 @@
 
       <h3>Hinweis</h3>
       <p>Diese App liefert eine Orientierung für frühe Verhandlungsphasen – kein Ersatz für professionelle Due Diligence oder ein Bewertungsgutachten.</p>
+
+      <div class="theme-switch-row">
+        <span>Dunkelmodus</span>
+        <button class="theme-switch" id="theme-toggle" role="switch" aria-checked="false" onclick="toggleTheme()"><span class="theme-switch-knob"></span></button>
+      </div>
     </div>
   </div>
 </div>
@@ -862,10 +900,39 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(e => console.warn("[sw]", e));
 }
 
+// ── Dark-/Hell-Modus-Umschalter ─────────────────────────────────
+function getStoredTheme() {
+  try { return localStorage.getItem('ub_theme'); } catch (e) { return null; }
+}
+function systemPrefersDark() {
+  return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+function applyTheme(theme) {
+  if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme);
+  else document.documentElement.removeAttribute('data-theme');
+  const dark = theme === 'light' ? false : theme === 'dark' ? true : systemPrefersDark();
+  const meta = document.getElementById('theme-color-meta');
+  if (meta) meta.setAttribute('content', dark ? '#1c1c1e' : '#f2f2f7');
+}
+function toggleTheme() {
+  const btn = document.getElementById('theme-toggle');
+  const next = btn.getAttribute('aria-checked') === 'true' ? 'light' : 'dark';
+  btn.setAttribute('aria-checked', next === 'dark' ? 'true' : 'false');
+  try { localStorage.setItem('ub_theme', next); } catch (e) {}
+  applyTheme(next);
+}
+function initThemeToggle() {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const effective = getStoredTheme() || (systemPrefersDark() ? 'dark' : 'light');
+  btn.setAttribute('aria-checked', effective === 'dark' ? 'true' : 'false');
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById("install-icon").innerHTML = icon("smartphone", 16);
 document.getElementById("share-icon").innerHTML   = icon("share", 16);
 renderBrancheInfo();
+initThemeToggle();
 </script>
 </body>
 </html>
