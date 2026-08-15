@@ -62,6 +62,9 @@ Aktuell: `bewertung-v2`. Bei Änderungen an Icons, `manifest.json` oder `sw.js` 
 
 Gesamt-Abschlag: max. 70%.
 
+## Dark-/Hell-Modus-Umschalter (2026-08-15)
+Manueller Umschalter im Info-Sheet ergänzt (überschreibt `prefers-color-scheme`), Standard-Pattern aus `PKA/BKM/PWA-Standards.md`. `theme-color`-Meta konsolidiert + synchronisiert (vorher zwei `media`-Tags).
+
 ## Pitfalls
 
 - `manifest.json`: `"purpose": "any"` – NIEMALS `"any maskable"` (iOS schneidet Icon ab, Bug bestätigt 2026-05-22)
