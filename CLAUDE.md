@@ -76,3 +76,9 @@ Manueller Umschalter im Info-Sheet ergänzt (überschreibt `prefers-color-scheme
 
 - Branchenspezifische Multiples: Damodaran (Januar 2025)
 - Methodik: IDW S1 / Multiplikatorverfahren
+
+## Dark-/Hell-Modus-Umschalter – Position (2026-09-26)
+
+Der Umschalter steht im Info-Sheet **direkt hinter dem Einleitungsabschnitt**, vor allen weiteren Hilfeeinträgen – verbindliche Vorgabe aus `PKA/BKM/PWA-Standards.md` (vorher stand er unten neben Version/Schließen). Beim Umbauen des Info-Sheets die Position beibehalten.
+
+Zusätzlich beim selben Deploy: Die App hatte **gar keine Versionszeile** im Info-Sheet (BKM-Pflicht). Eingeführt mit **1.1 · 2026-09-26** – nicht 1.0, weil das laut `BKM/App-Versionierung.md` die Startversion für neue Apps ist und die App bereits produktiv lief (gleiches Vorgehen wie bei QG Team Reports).
