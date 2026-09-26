@@ -577,6 +577,10 @@
     <div id="info-sheet-body">
       <h3>Was berechnet die App?</h3>
       <p>Eine plausible Bandbreite des Unternehmenswerts aus drei Methoden: Umsatz-Multiple, EBITDA-Multiple und Substanzwert. Risikofaktoren wie Verluste, Kundenkonzentration oder Konzernverflechtungen werden als prozentualer Abschlag berücksichtigt.</p>
+      <div class="theme-switch-row">
+        <span>Dunkelmodus</span>
+        <button class="theme-switch" id="theme-toggle" role="switch" aria-checked="false" onclick="toggleTheme()"><span class="theme-switch-knob"></span></button>
+      </div>
 
       <h3>Enterprise Value vs. Equity Value</h3>
       <p>Das primäre Ergebnis ist der <strong>Enterprise Value (EV)</strong> – der Gesamtwert des Unternehmens inkl. Schulden. Wenn du den Net Debt eingibst (Finanzverbindlichkeiten minus Cashbestand), wird zusätzlich der <strong>Equity Value</strong> ausgewiesen: das, was der Käufer nach Schuldentilgung erhält.</p>
@@ -590,10 +594,7 @@
       <h3>Hinweis</h3>
       <p>Diese App liefert eine Orientierung für frühe Verhandlungsphasen – kein Ersatz für professionelle Due Diligence oder ein Bewertungsgutachten.</p>
 
-      <div class="theme-switch-row">
-        <span>Dunkelmodus</span>
-        <button class="theme-switch" id="theme-toggle" role="switch" aria-checked="false" onclick="toggleTheme()"><span class="theme-switch-knob"></span></button>
-      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:16px">Version 1.1 · 2026-09-26 · a sEpp-App</p>
     </div>
   </div>
 </div>
